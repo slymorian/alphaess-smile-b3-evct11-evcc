@@ -92,8 +92,8 @@ Einstellungen je Kanal:
 <img width="710" height="947" alt="Waveshare 2-CH RS485 TO ETH (B), angeschlossen in einem Abzweigkasten" src="https://github.com/user-attachments/assets/e5fcbf56-1d6a-4908-939b-200b2cec01f8" />
 
 *Der Konverter bei mir im Abzweigkasten: oben Stromversorgung und Netzwerk (gibt es auch als PoE-Version),
-unten die RS485-Adern der beiden Kanäle, die über Klemmenplatinen mit
-RJ45-Buchse zu Wallbox und Smile-B3 führen.*
+unten die RS485-Adern der beiden Kanäle, die über eine Klemmenplatine mit
+2 RJ45-Buchsen zu Wallbox und Smile-B3 führen.*
 
 ### Was sich in der Software ändert
 
