@@ -93,7 +93,7 @@ Einstellungen je Kanal:
 
 *Der Konverter bei mir im Abzweigkasten: oben Stromversorgung und Netzwerk (gibt es auch als PoE-Version),
 unten die RS485-Adern der beiden Kanäle, die über Klemmenplatinen mit
-RJ45-Buchse zu den Geräten führen.*
+RJ45-Buchse zu Wallbox und Smile-B3 führen.*
 
 ### Was sich in der Software ändert
 
