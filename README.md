@@ -474,8 +474,7 @@ Mitschnitte über die Skripte bis zu dieser Dokumentation.
   bereit. Eine Alternative für alle, die den Speicher ohne EVCC z.B. direkt
   in Home Assistant einbinden möchten; für die Steuerung über EVCC wird es
   nicht benötigt
-- EVCC-Community, [Discussion #21869](https://github.com/evcc-io/evcc/discussions/21869)
-  zu OCPP-Problemen mit der EVCT11
+
 
 ## Lizenz
 MIT — freie Nutzung, keine Gewähr.
