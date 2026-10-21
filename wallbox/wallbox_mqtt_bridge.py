@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
 wallbox_mqtt_bridge.py — Verbindet unseren reverse-engineerten Modbus-Master
-(spricht die Wallbox direkt an, Rolle wie B3) mit den bestehenden EVCC-MQTT-
-Topics aus evcc.yaml:
+(spricht die Wallbox direkt an, Rolle wie B3) mit EVCC über MQTT. In EVCC
+wird die Wallbox als benutzerdefinierte Wallbox (type: custom) eingerichtet,
+per Oberfläche oder evcc.yaml — siehe wallbox/evcc-beispiel.yaml.
+
+  Alle Lese-Topics werden mit retain=True publiziert, damit EVCC nach einem
+  Neustart (und beim "Prüfen" in der Oberfläche) sofort Werte bekommt:
 
   Wir PUBLIZIEREN (lesen von der Wallbox):
     <prefix>/status    "A" | "B" | "C"
@@ -388,7 +392,7 @@ def mqtt_publish_loop(client, state: SharedState, args, stop_event: threading.Ev
             last_enabled = enabled
         now = time.monotonic()
         if now - last_power_pub >= 2.0:
-            client.publish(f"{args.mqtt_prefix}/power", power)
+            client.publish(f"{args.mqtt_prefix}/power", power, retain=True)
             last_power_pub = now
 
         time.sleep(0.5)

@@ -284,13 +284,13 @@ root lesbar) und nicht ins Repo.
 
 MQTT-Topics (Prefix frei wählbar):
 
-| Topic | Richtung | Inhalt |
-|---|---|---|
-| `<prefix>/status` | Brücke → EVCC | `A` (kein Fahrzeug), `B` (verbunden), `C` (lädt) |
-| `<prefix>/enabled` | Brücke → EVCC | `true` / `false` |
-| `<prefix>/power` | Brücke → EVCC | Ladeleistung in Watt |
-| `<prefix>/set/enabled` | EVCC → Brücke | `true` / `false` |
-| `<prefix>/maxcurrent` | EVCC → Brücke | Ampere pro Phase |
+| Topic | Richtung | Inhalt | Retain / Takt |
+|---|---|---|---|
+| `<prefix>/status` | Brücke → EVCC | `A` (kein Fahrzeug), `B` (verbunden), `C` (lädt) | ja, bei Änderung |
+| `<prefix>/enabled` | Brücke → EVCC | `true` / `false` | ja, bei Änderung |
+| `<prefix>/power` | Brücke → EVCC | Ladeleistung in Watt | ja, alle 2 s |
+| `<prefix>/set/enabled` | EVCC → Brücke | `true` / `false` | – |
+| `<prefix>/maxcurrent` | EVCC → Brücke | Ampere pro Phase | – |
 
 **Verbindungsabbrüche:** Reißt die Verbindung zur Wallbox ab (Adapter
 gezogen, Konverter oder Netzwerk weg) oder kommt 30 Sekunden lang keine
@@ -298,6 +298,51 @@ gültige Antwort, baut die Brücke die Verbindung selbstständig neu auf und
 versucht es alle 5 Sekunden erneut (einstellbar über `--reconnect-after` und
 `--reconnect-delay`). Solange die Verbindung fehlt, bleiben auf MQTT die
 zuletzt gelesenen Werte stehen; im Log steht dann `bus=GETRENNT`.
+
+### Einrichtung in EVCC
+
+Die Wallbox wird in EVCC als **benutzerdefinierte Wallbox** eingerichtet, am
+einfachsten über die Oberfläche: Wallbox hinzufügen → „Benutzerdefinierte
+Wallbox“ und folgende Konfiguration einfügen (Prefix ggf. anpassen):
+
+```yaml
+type: custom
+status:
+  source: mqtt
+  topic: alphaess/wallbox/status
+enabled:
+  source: mqtt
+  topic: alphaess/wallbox/enabled
+enable:
+  source: mqtt
+  topic: alphaess/wallbox/set/enabled
+  payload: "{{ .enable }}"
+maxcurrent:
+  source: mqtt
+  topic: alphaess/wallbox/maxcurrent
+  payload: "{{ .maxcurrent }}"
+power:
+  source: mqtt
+  topic: alphaess/wallbox/power
+```
+
+Dieselbe Konfiguration als Datei: [`wallbox/evcc-beispiel.yaml`](wallbox/evcc-beispiel.yaml).
+
+Hinweise:
+
+- **Kein `timeout` setzen.** `status` und `enabled` werden nur bei Änderungen
+  publiziert; ein Timeout würde in ruhigen Phasen Fehler auslösen.
+- **Die Lese-Topics müssen retained sein.** Sonst meldet „Prüfen“ in der
+  EVCC-Oberfläche `outdated`, weil der Test sofort einen Wert erwartet. Die
+  Brücke publiziert deshalb alle drei Lese-Topics mit `retain`.
+- **Kein separater Ladezähler nötig.** EVCC nutzt `power` aus der
+  Wallbox-Konfiguration; das Feld „Ladezähler“ am Ladepunkt bleibt leer.
+- **Nicht doppelt konfigurieren.** Die Wallbox entweder in der Oberfläche
+  *oder* in `evcc.yaml` anlegen, nicht beides — sonst steuern zwei
+  Ladepunkte dieselbe Box über dieselben Topics.
+- Nach einem Neustart startet die Brücke mit `enabled=false` und 6 A, bis
+  EVCC wieder sendet. EVCC erkennt das über das zurückgemeldete `enabled`
+  und setzt den Zustand neu.
 
 ### Nicht geklärte offene Punkte
 
@@ -445,6 +490,7 @@ Beide Tools lesen nur, sie verändern nichts am Speicher.
 | `wallbox_mqtt_bridge.py` | Produktions-Brücke: Modbus ↔ MQTT für EVCC-Integration, mit automatischem Neuverbinden |
 | `wallbox-mqtt-bridge.service` | systemd-Unit für Dauerbetrieb |
 | `wallbox-mqtt-bridge.env.example` | Vorlage für die MQTT-Zugangsdaten der systemd-Unit |
+| `evcc-beispiel.yaml` | EVCC-Konfiguration der Wallbox (benutzerdefinierte Wallbox über MQTT) |
 
 Alle drei Skripte mit Bus-Zugriff nehmen bei `--port` einen Gerätepfad oder
 eine `socket://IP:PORT`-URL.

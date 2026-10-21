@@ -1,0 +1,43 @@
+# evcc-beispiel.yaml — EVCT11-Wallbox in EVCC über die MQTT-Brücke
+#
+# Voraussetzung: wallbox_mqtt_bridge.py läuft mit --mqtt-prefix alphaess/wallbox
+# (Prefix ggf. unten anpassen).
+#
+# Variante A (empfohlen): EVCC-Oberfläche → Wallbox hinzufügen →
+# "Benutzerdefinierte Wallbox" und den Block unter "chargers:" OHNE die Zeile
+# "name:" einfügen (Einrückung entsprechend entfernen).
+#
+# Variante B: in evcc.yaml wie unten. Nicht beides gleichzeitig verwenden —
+# sonst steuern zwei Ladepunkte dieselbe Wallbox.
+#
+# Hinweise:
+# - Kein "timeout" setzen: status/enabled werden nur bei Änderung publiziert.
+# - Die Brücke publiziert status/enabled/power mit retain, sonst meldet
+#   "Prüfen" in der Oberfläche "outdated".
+# - Kein separater Ladezähler nötig, EVCC nutzt "power" der Wallbox.
+
+chargers:
+  - name: alphaess_wallbox
+    type: custom
+    status:
+      source: mqtt
+      topic: alphaess/wallbox/status
+    enabled:
+      source: mqtt
+      topic: alphaess/wallbox/enabled
+    enable:
+      source: mqtt
+      topic: alphaess/wallbox/set/enabled
+      payload: "{{ .enable }}"
+    maxcurrent:
+      source: mqtt
+      topic: alphaess/wallbox/maxcurrent
+      payload: "{{ .maxcurrent }}"
+    power:
+      source: mqtt
+      topic: alphaess/wallbox/power
+
+loadpoints:
+  - title: Wallbox
+    charger: alphaess_wallbox
+    # kein "meter:" nötig
